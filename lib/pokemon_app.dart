@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
 import 'models/pokemon_model.dart';
 import 'widgets/pokemon_list.dart';
 
@@ -14,8 +13,8 @@ class PokemonApp extends StatefulWidget {
 
 class _PokemonAppState extends State<PokemonApp> {
   List<Pokemon> pokemons = [];
-  int offset = 20;
-  final int limit = 20;
+  int currentId = 1;
+  final int batchSize = 20;
   bool isLoading = false;
 
   Future<void> fetchPokemons() async {
@@ -23,26 +22,24 @@ class _PokemonAppState extends State<PokemonApp> {
 
     setState(() => isLoading = true);
 
-    final url =
-        'https://pokeapi.co/api/v2/pokemon/?offset=$offset&limit=$limit';
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-
-      for (var result in data['results']) {
-        final detailResponse = await http.get(Uri.parse(result['url']));
-        if (detailResponse.statusCode == 200) {
-          final detailData = jsonDecode(detailResponse.body);
+    for (int i = currentId; i < currentId + batchSize; i++) {
+      final url = 'https://pokeapi.co/api/v2/pokemon/$i';
+      try {
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          final detailData = jsonDecode(response.body);
           final pokemon = Pokemon.fromJson(detailData);
           setState(() => pokemons.add(pokemon));
         }
+      } catch (e) {
+        debugPrint('Ошибка при загрузке покемона $i: $e');
       }
-
-      setState(() => offset += limit);
     }
 
-    setState(() => isLoading = false);
+    setState(() {
+      currentId += batchSize;
+      isLoading = false;
+    });
   }
 
   @override
