@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:hw44/pokemon_app.dart';
+import 'pokemon_app.dart';
 
 void main() {
-  runApp(const PokemonApp());
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Pokemon List',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: PokemonApp(),
+    );
+  }
 }
